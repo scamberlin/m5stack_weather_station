@@ -66,7 +66,7 @@ try:
 except Exception as e:
   print("Exception I2C: {}".format(e))
 
-days = [ 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun' ]
+days = [ 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Sat', 'Sun' ]
 months = [ 'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec' ]
 
 def cettime():
@@ -85,43 +85,34 @@ def cettime():
 def _time():
   while True:
     cet = cettime()    # get the date and time in UTC
-    date = '{} {} {} {}'.format(days[cet[6]], cet[2], months[cet[1] - 1], cet[0])
+    date = '{}, {} {} {}'.format(days[cet[6]], cet[2], months[cet[1] - 1], cet[0])
     time = '{:02}:{:02}'.format(cet[3], cet[4])
-    tft.text(font1, date, 60, 20, ili9342c.WHITE, ili9342c.BLACK)
-    tft.text(font4, time, 80, 30, ili9342c.WHITE, ili9342c.BLACK)
+    tft.text(font1, date, 56, 0, ili9342c.WHITE, ili9342c.BLACK)
+    tft.text(font4, time, 80, 10, ili9342c.WHITE, ili9342c.BLACK)
     utime.sleep(1)
 
 def _weather():
   while True:
     weather_data = requests.get(config.OWM_API_URL)
-    print(weather_data.json())
-    location = 'Location: ' + weather_data.json().get('name') + ' - ' + weather_data.json().get('sys').get('country')
-    print(location)
-    description = 'Description: ' + weather_data.json().get('weather')[0].get('main')
-    print(description)
-    # Temperature
-    raw_temperature = weather_data.json().get('main').get('temp')-273.15
-    # Temperature in Celsius
-    temperature = 'Temperature: ' + str(raw_temperature) + '*C'
-    print(temperature)
-    #uncomment for temperature in Fahrenheit
-    temperature = 'Temperature: ' + str(raw_temperature*(9/5.0)+32) + '*F'
-    print(temperature)
-    # Pressure
-    pressure = 'Pressure: ' + str(weather_data.json().get('main').get('pressure')) + 'hPa'
-    print(pressure)
-    # Humidity
-    humidity = 'Humidity: ' + str(weather_data.json().get('main').get('humidity')) + '%'
-    print(humidity)
-    # Wind
-    wind = 'Wind: ' + str(weather_data.json().get('wind').get('speed')) + 'mps ' + str(weather_data.json().get('wind').get('deg')) + '*'
-    print(wind)
-    tft.jpg("jpg/wunderground/big/{}.jpg".format(weather_data.json().get('weather')[0].get('icon')[:2]), 0 , 55)
-    description = weather_data.json().get('weather')[0].get('description')
-    temperature = str(weather_data.json().get('main').get('temp')-273.15)[:4]
-    tft.text(font2, description, 110, 80, ili9342c.WHITE, ili9342c.BLACK)
-    tft.text(font4, "{}C".format(temperature), 110, 100, ili9342c.WHITE, ili9342c.BLACK)
-
+    for i in range(0,7,1):
+      weather_icon = weather_data.json().get('list')[i].get('weather')[0].get('icon')[:2]
+      weather_description = weather_data.json().get('list')[i].get('weather')[0].get('description')
+      weather_temp = str(weather_data.json().get('list')[i].get('main').get('temp')-273.15)[:4]
+      weather_temp_min = str(weather_data.json().get('list')[i].get('main').get('temp_min')-273.15)[:2]
+      weather_temp_max = str(weather_data.json().get('list')[i].get('main').get('temp_max')-273.15)[:2]
+      if i == 0:
+        tft.jpg("jpg/wunderground/big/{}.jpg".format(weather_icon), 35 , 50)
+        tft.text(font2, weather_description, int((((240/2)-(len(weather_description)*8))/2)+120), 60, ili9342c.WHITE, ili9342c.BLACK)
+        tft.text(font4, "{}C".format(weather_temp), 140, 80, ili9342c.WHITE, ili9342c.BLACK)
+        tft.text(font2, "{}/{}".format(weather_temp_min, weather_temp_max), 160, 110, ili9342c.WHITE, ili9342c.BLACK)
+      elif i < 4:
+        tft.text(font2, "{}".format(days[time.localtime()[6]+i]), 28 + ((i-1)*80), 140, ili9342c.WHITE, ili9342c.BLACK)
+        tft.jpg("jpg/wunderground/small/{}.jpg".format(weather_icon), 15 + ((i-1)*80), 160)
+        tft.text(font2, "{}/{}".format(weather_temp_min, weather_temp_max), 20 + ((i-1)*80), 210, ili9342c.WHITE, ili9342c.BLACK)
+      else:
+        tft.text(font2, "{}".format(days[time.localtime()[6]+i]), 28 + ((i-4)*80), 230, ili9342c.WHITE, ili9342c.BLACK)
+        tft.jpg("jpg/wunderground/small/{}.jpg".format(weather_icon), 15 + ((i-4)*80), 250)
+        tft.text(font2, "{}/{}".format(weather_temp_min, weather_temp_max), 20 + ((i-4)*80), 300, ili9342c.WHITE, ili9342c.BLACK)
     utime.sleep(600)
 
 axp = axp202c.PMU(address=0x34)
