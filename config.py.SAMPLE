@@ -1,0 +1,8 @@
+WLAN_ENABLE      = True
+WLAN_SSID        = 'WLAN_SSID'
+WLAN_PASS        = 'WLAN_PASS'
+
+OWM_API_KEY      = 'API_KEY'
+OWM_API_CITY     = 'CITY'
+OWM_API_COUNTRY  = 'COUNTRY'
+OWM_API_URL      = 'http://api.openweathermap.org/data/2.5/weather?q=' + OWM_API_CITY + ',' + OWM_API_COUNTRY + '&APPID=' + OWM_API_KEY
